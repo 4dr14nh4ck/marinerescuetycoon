@@ -16,3 +16,4 @@ out/
 # Node/python caches if you use tools
 node_modules/
 __pycache__/
+rojo.exe
