@@ -1,0 +1,14 @@
+{
+  "name": "MarineRescueTycoon",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": { "$path": "ReplicatedStorage" },
+
+    "ServerScriptService": { "$path": "ServerScriptService" },
+
+    "StarterPlayer": {
+      "StarterPlayerScripts": { "$path": "StarterPlayer/StarterPlayerScripts" }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+# Roblox/Studio & OS junk
+*.rbxl
+*.rbxlx
+*.rbxm
+*.rblx
+*.rbt
+*.rbxl.autosave
+*.rbxl.lock
+.svn/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+# Rojo build artifacts
+out/
+# Node/python caches if you use tools
+node_modules/
+__pycache__/
