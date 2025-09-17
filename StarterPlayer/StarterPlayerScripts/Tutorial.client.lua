@@ -1,191 +1,205 @@
--- StarterPlayer/StarterPlayerScripts/Tutorial.client.lua
--- Fullscreen, must-accept tutorial overlay (English) with non-overlapping button.
+--!strict
+-- TutorialUI.client.lua
+-- Mantiene la jerarquía: TutorialUI > Frame > Card > Body (ScrollingFrame)
+-- Reemplaza cualquier uso de Body:AddItem(x) por item.Parent = Body
+
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
-local plr = Players.LocalPlayer
-local evFolder = ReplicatedStorage:WaitForChild("TutorialEvents")
-local TutorialAccept = evFolder:WaitForChild("TutorialAccept")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
--- Build UI
-local sg = Instance.new("ScreenGui")
-sg.Name = "IntroTutorial"
-sg.ResetOnSpawn = false
-sg.IgnoreGuiInset = true
-sg.ZIndexBehavior = Enum.ZIndexBehavior.Global
-sg.DisplayOrder = 10^6
-sg.Parent = plr:WaitForChild("PlayerGui")
+--========================
+-- CONFIG
+--========================
+local STEPS = {
+	{ title = "Bienvenido", body = "Este es Marine Rescue Tycoon. Captura peces con tu red y gestiona tu acuario." },
+	{ title = "Movimiento", body = "Muévete con WASD y salta con Space. Mantén Shift para correr." },
+	{ title = "Tu Red", body = "Si no tienes la red, se te entrega automáticamente al entrar. Úsala para capturar peces." },
+	{ title = "Acuario", body = "Tienes un acuario propio. Coloca/gestiona peces y mira cómo progresa." },
+	{ title = "Progresión", body = "Gana Fish y Tickets. Usa los puntos de mejora (prompts) para ampliar y mejorar." },
+}
 
-local dim = Instance.new("Frame")
-dim.BackgroundColor3 = Color3.fromRGB(0,0,0)
-dim.BackgroundTransparency = 0.25
+local THEME = {
+	cardW = 520,
+	cardH = 300,
+	bgTransparency = 0.35,
+	accent = Color3.fromRGB(255,255,255),
+}
+
+--========================
+-- UI BASE
+--========================
+local gui = Instance.new("ScreenGui")
+gui.Name = "TutorialUI"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+gui.Enabled = true
+gui.Parent = playerGui
+
+local frame = Instance.new("Frame")
+frame.Name = "Frame"
+frame.Size = UDim2.fromScale(1,1)
+frame.BackgroundColor3 = Color3.new(0,0,0)
+frame.BackgroundTransparency = 1
+frame.Parent = gui
+
+local dim = Instance.new("TextButton")
+dim.Name = "Dim"
+dim.AutoButtonColor = false
+dim.Text = ""
 dim.Size = UDim2.fromScale(1,1)
-dim.Parent = sg
+dim.BackgroundColor3 = Color3.new(0,0,0)
+dim.BackgroundTransparency = 0.5
+dim.Parent = frame
 
+-- Tarjeta
 local card = Instance.new("Frame")
 card.Name = "Card"
+card.Size = UDim2.fromOffset(THEME.cardW, THEME.cardH)
 card.AnchorPoint = Vector2.new(0.5,0.5)
 card.Position = UDim2.fromScale(0.5,0.5)
-card.Size = UDim2.new(0, 720, 0, 480) -- taller so nothing overlaps
-card.BackgroundColor3 = Color3.fromRGB(18,22,28)
-card.BackgroundTransparency = 0.05
+card.BackgroundColor3 = Color3.fromRGB(30,30,40)
+card.BackgroundTransparency = THEME.bgTransparency
 card.BorderSizePixel = 0
-card.Parent = sg
+card.Parent = frame
 
-local uic = Instance.new("UICorner", card)
-uic.CornerRadius = UDim.new(0, 14)
+local corner = Instance.new("UICorner"); corner.CornerRadius = UDim.new(0,16); corner.Parent = card
+local stroke = Instance.new("UIStroke"); stroke.Thickness = 1; stroke.Color = Color3.fromRGB(200,200,200); stroke.Transparency = 0.4; stroke.Parent = card
 
-local pad = Instance.new("UIPadding", card)
-pad.PaddingTop    = UDim.new(0, 18)
-pad.PaddingBottom = UDim.new(0, 18)
-pad.PaddingLeft   = UDim.new(0, 22)
-pad.PaddingRight  = UDim.new(0, 22)
-
--- Title
+-- Título
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1,0,0,48)
+title.Name = "Title"
 title.BackgroundTransparency = 1
-title.Text = "Marine Rescue & Aquarium Tycoon — Tutorial"
-title.Font = Enum.Font.GothamBlack
+title.Size = UDim2.new(1, -24, 0, 36)
+title.Position = UDim2.new(0, 12, 0, 10)
+title.Font = Enum.Font.GothamBold
 title.TextScaled = true
-title.TextColor3 = Color3.fromRGB(255,255,255)
+title.TextColor3 = Color3.fromRGB(245,245,245)
+title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = card
 
--- Subtitle (beta note)
-local beta = Instance.new("TextLabel")
-beta.Size = UDim2.new(1,0,0,26)
-beta.Position = UDim2.new(0,0,0,50)
-beta.BackgroundTransparency = 1
-beta.Text = "Beta • Some features are still under development."
-beta.Font = Enum.Font.GothamSemibold
-beta.TextScaled = true
-beta.TextColor3 = Color3.fromRGB(200,220,255)
-beta.TextTransparency = 0.1
-beta.Parent = card
+-- Cuerpo (ScrollingFrame)
+local body = Instance.new("ScrollingFrame")
+body.Name = "Body"
+body.Size = UDim2.new(1, -24, 1, -100)
+body.Position = UDim2.new(0, 12, 0, 52)
+body.BackgroundTransparency = 1
+body.BorderSizePixel = 0
+body.ScrollBarThickness = 6
+body.AutomaticCanvasSize = Enum.AutomaticSize.Y
+body.CanvasSize = UDim2.new(0,0,0,0)
+body.Parent = card
 
--- Steps container as a ScrollingFrame (prevents overlap with button)
-local steps = Instance.new("ScrollingFrame")
-steps.Name = "Steps"
-steps.BackgroundTransparency = 1
-steps.BorderSizePixel = 0
-steps.ScrollBarThickness = 6
-steps.AutomaticCanvasSize = Enum.AutomaticSize.Y
-steps.CanvasSize = UDim2.new(0,0,0,0)
-steps.ClipsDescendants = true
--- occupies the central area; bottom reserved for button (80px)
-steps.Position = UDim2.new(0,0,0,90)
-steps.Size = UDim2.new(1, 0, 1, -180) -- leaves ~90 top + ~90 bottom for button area
-steps.Parent = card
+-- Layout de lista para los items del cuerpo
+local layout = Instance.new("UIListLayout")
+layout.FillDirection = Enum.FillDirection.Vertical
+layout.Padding = UDim.new(0, 8)
+layout.Parent = body
 
-local list = Instance.new("UIListLayout", steps)
-list.Padding = UDim.new(0, 10)
-list.HorizontalAlignment = Enum.HorizontalAlignment.Left
-list.VerticalAlignment = Enum.VerticalAlignment.Top
+-- Footer con botones
+local footer = Instance.new("Frame")
+footer.Name = "Footer"
+footer.BackgroundTransparency = 1
+footer.Size = UDim2.new(1, -24, 0, 40)
+footer.Position = UDim2.new(0, 12, 1, -48)
+footer.Parent = card
 
-local function addStep(num, titleTxt, descTxt)
-	local row = Instance.new("Frame")
-	row.BackgroundTransparency = 1
-	row.Size = UDim2.new(1,0,0,64)
-	row.Parent = steps
+local buttons = Instance.new("Frame")
+buttons.Name = "Buttons"
+buttons.BackgroundTransparency = 1
+buttons.Size = UDim2.new(1,0,1,0)
+buttons.Parent = footer
 
-	local numBadge = Instance.new("TextLabel")
-	numBadge.Size = UDim2.new(0, 44, 0, 44)
-	numBadge.BackgroundColor3 = Color3.fromRGB(35,130,220)
-	numBadge.TextColor3 = Color3.fromRGB(255,255,255)
-	numBadge.TextScaled = true
-	numBadge.Font = Enum.Font.GothamBlack
-	numBadge.Text = tostring(num)
-	numBadge.Parent = row
-	local badgeCorner = Instance.new("UICorner", numBadge)
-	badgeCorner.CornerRadius = UDim.new(1,0)
+local blayout = Instance.new("UIListLayout")
+blayout.FillDirection = Enum.FillDirection.Horizontal
+blayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+blayout.Padding = UDim.new(0,8)
+blayout.Parent = buttons
 
-	local col = Instance.new("Frame")
-	col.BackgroundTransparency = 1
-	col.Size = UDim2.new(1, -56, 1, 0)
-	col.Position = UDim2.new(0,56,0,0)
-	col.Parent = row
-
-	local stepTitle = Instance.new("TextLabel")
-	stepTitle.Size = UDim2.new(1,0,0,28)
-	stepTitle.BackgroundTransparency = 1
-	stepTitle.Text = titleTxt
-	stepTitle.Font = Enum.Font.GothamBold
-	stepTitle.TextScaled = true
-	stepTitle.TextColor3 = Color3.fromRGB(255,255,255)
-	stepTitle.Parent = col
-
-	local stepDesc = Instance.new("TextLabel")
-	stepDesc.Size = UDim2.new(1,0,0,26)
-	stepDesc.Position = UDim2.new(0,0,0,30)
-	stepDesc.BackgroundTransparency = 1
-	stepDesc.TextWrapped = true
-	stepDesc.TextScaled = true
-	stepDesc.Font = Enum.Font.Gotham
-	stepDesc.TextColor3 = Color3.fromRGB(210,220,230)
-	stepDesc.Text = descTxt
-	stepDesc.Parent = col
+local function newBtn(text: string)
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.fromOffset(140, 36)
+	b.BackgroundColor3 = THEME.accent
+	b.TextColor3 = Color3.fromRGB(30,30,30)
+	b.AutoButtonColor = true
+	b.TextScaled = true
+	b.Font = Enum.Font.GothamBold
+	b.Text = text
+	local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0,10); c.Parent = b
+	return b
 end
 
-addStep(1, "Use the net to catch fish",
-	"Equip your Net and click where you want to throw it. Simple and straight.")
-addStep(2, "Choose to cure or release",
-	"Every catch prompts a decision. Cure to grow your aquarium, or release to play it fair.")
-addStep(3, "Upgrade your aquarium",
-	"Earn tickets and spend them to increase your tank capacity. Bigger tanks, more fish.")
-addStep(4, "Beat everyone — build the best aquarium",
-	"Climb the global leaderboard and make your aquarium the #1 destination.")
+local skipBtn = newBtn("Saltar")
+skipBtn.Parent = buttons
 
--- Accept button (sits below the scrolling area)
-local btn = Instance.new("TextButton")
-btn.AnchorPoint = Vector2.new(0.5,1)
-btn.Position = UDim2.new(0.5,0,1,-16)
-btn.Size = UDim2.new(0, 260, 0, 48)
-btn.BackgroundColor3 = Color3.fromRGB(46,180,130)
-btn.TextColor3 = Color3.fromRGB(255,255,255)
-btn.TextScaled = true
-btn.Font = Enum.Font.GothamBlack
-btn.Text = "I understand — Play"
-btn.Parent = card
-local btnCorner = Instance.new("UICorner", btn); btnCorner.CornerRadius = UDim.new(0, 10)
+local nextBtn = newBtn("Siguiente")
+nextBtn.Parent = buttons
 
--- Optional tip (kept hidden unless you add a menu entry to reopen tutorial)
-local hint = Instance.new("TextLabel")
-hint.AnchorPoint = Vector2.new(0.5,1)
-hint.Position = UDim2.new(0.5,0,1,-70)
-hint.Size = UDim2.new(0, 420, 0, 22)
-hint.BackgroundTransparency = 1
-hint.TextColor3 = Color3.fromRGB(200,200,205)
-hint.TextScaled = true
-hint.Font = Enum.Font.Gotham
-hint.Text = "Tip: You can re-open this tutorial later from the Menu."
-hint.Parent = card
-hint.Visible = false
+--========================
+-- LÓGICA
+--========================
+local index = 1
 
--- Appear animation
-card.Size = UDim2.new(0, 720, 0, 440)
-TweenService:Create(card, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 720, 0, 480)}):Play()
-
--- Prevent ESC reset while modal (optional)
-pcall(function() game:GetService("StarterGui"):SetCore("ResetButtonCallback", false) end)
-
-local accepted = false
-local function closeTutorial()
-	if accepted then return end
-	accepted = true
-	TutorialAccept:FireServer()
-	TweenService:Create(dim, TweenInfo.new(0.18), {BackgroundTransparency = 1}):Play()
-	TweenService:Create(card, TweenInfo.new(0.18), {BackgroundTransparency = 1}):Play()
-	task.delay(0.2, function()
-		if sg then sg:Destroy() end
-		pcall(function() game:GetService("StarterGui"):SetCore("ResetButtonCallback", true) end)
-	end)
+local function makeBodyItem(text: string)
+	local item = Instance.new("TextLabel")
+	item.BackgroundTransparency = 0.2
+	item.TextWrapped = true
+	item.Size = UDim2.new(1, -6, 0, 28)
+	item.Font = Enum.Font.Gotham
+	item.TextScaled = true
+	item.TextColor3 = Color3.fromRGB(235,235,235)
+	item.Text = "• "..text
+	local ic = Instance.new("UICorner"); ic.CornerRadius = UDim.new(0,8); ic.Parent = item
+	return item
 end
-btn.MouseButton1Click:Connect(closeTutorial)
 
--- Safety: if server already marked as accepted (e.g., quick respawn)
-plr:GetAttributeChangedSignal("TutorialAccepted"):Connect(function()
-	if plr:GetAttribute("TutorialAccepted") == true then
-		closeTutorial()
+local function clearBody()
+	for _, ch in ipairs(body:GetChildren()) do
+		if ch:IsA("GuiObject") and ch ~= layout then
+			ch:Destroy()
+		end
+	end
+end
+
+local function buildUI()
+	local step = STEPS[index]
+	if not step then return end
+
+	title.Text = step.title
+	clearBody()
+
+	-- IMPORTANTE: antes se hacía Body:AddItem(x) -> eso NO existe. Ahora:
+	-- creamos los items y les ponemos Parent = body (con UIListLayout).
+	local lines = string.split(step.body, ". ")
+	for i, line in ipairs(lines) do
+		if line == "" then continue end
+		local item = makeBodyItem(line .. (i < #lines and "." or ""))
+		item.Parent = body
+	end
+
+	-- Animación suave de aparición
+	card.BackgroundTransparency = 0.5
+	TweenService:Create(card, TweenInfo.new(0.18), {BackgroundTransparency = THEME.bgTransparency}):Play()
+
+	nextBtn.Text = (index >= #STEPS) and "Entendido" or "Siguiente"
+end
+
+nextBtn.MouseButton1Click:Connect(function()
+	if index < #STEPS then
+		index += 1
+		buildUI()
+	else
+		gui.Enabled = false
 	end
 end)
+
+skipBtn.MouseButton1Click:Connect(function()
+	gui.Enabled = false
+end)
+
+dim.MouseButton1Click:Connect(function() end) -- bloquea clicks al fondo
+
+-- Inicial
+buildUI()

@@ -1,128 +1,155 @@
 -- StarterPlayerScripts/Tutorial/TutorialUI.client.lua
--- Muestra el tutorial con márgenes (responsive). En móvil ocupa ~90% de ancho y ~70% de alto.
+--!strict
+-- TutorialUI.client.lua – mismo layout del repo, sin AddItem, y sin bloquear movimiento
+
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
-local plr = Players.LocalPlayer
-local folder = ReplicatedStorage:WaitForChild("TutorialEvents")
-local TutorialAccept = folder:WaitForChild("TutorialAccept")
+local player = Players.LocalPlayer
+local pg = player:WaitForChild("PlayerGui")
 
-local function alreadyAccepted()
-	return plr:GetAttribute("TutorialAccepted") == true
+local STEPS = {
+	{ title = "Bienvenido", body = "Captura peces con tu red y gestiona tu acuario." },
+	{ title = "Movimiento", body = "WASD para moverte y Space para saltar." },
+	{ title = "Red",       body = "Si no te aparece, te la entregamos automáticamente." },
+	{ title = "Acuario",   body = "Gestiona tus peces/slots y mejora tu progreso." },
+}
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "TutorialUI"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+gui.Parent = pg
+
+-- IMPORTANTE: usar Frame (no TextButton) para no atrapar input
+local full = Instance.new("Frame")
+full.Name = "Frame"
+full.Size = UDim2.fromScale(1,1)
+full.BackgroundColor3 = Color3.new(0,0,0)
+full.BackgroundTransparency = 0.45
+full.Parent = gui
+
+-- Tarjeta (igual que tu panel base)
+local card = Instance.new("Frame")
+card.Name = "Card"
+card.AnchorPoint = Vector2.new(0.5,0.5)
+card.Position = UDim2.fromScale(0.5,0.5)
+card.Size = UDim2.fromOffset(520, 300)
+card.BackgroundColor3 = Color3.fromRGB(30,30,40)
+card.BackgroundTransparency = 0.35
+card.BorderSizePixel = 0
+card.Parent = full
+do
+	local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0,16); c.Parent = card
+	local s = Instance.new("UIStroke"); s.Thickness = 1; s.Transparency = 0.4; s.Parent = card
 end
 
--- UI factory
+local title = Instance.new("TextLabel")
+title.Name = "Title"
+title.BackgroundTransparency = 1
+title.Size = UDim2.new(1, -24, 0, 36)
+title.Position = UDim2.new(0, 12, 0, 10)
+title.Font = Enum.Font.GothamBold
+title.TextScaled = true
+title.TextColor3 = Color3.fromRGB(245,245,245)
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = card
+
+local body = Instance.new("ScrollingFrame")
+body.Name = "Body"
+body.Size = UDim2.new(1, -24, 1, -100)
+body.Position = UDim2.new(0, 12, 0, 52)
+body.BackgroundTransparency = 1
+body.ScrollBarThickness = 6
+body.AutomaticCanvasSize = Enum.AutomaticSize.Y
+body.CanvasSize = UDim2.new(0,0,0,0)
+body.Parent = card
+
+local layout = Instance.new("UIListLayout")
+layout.FillDirection = Enum.FillDirection.Vertical
+layout.Padding = UDim.new(0, 8)
+layout.Parent = body
+
+local footer = Instance.new("Frame")
+footer.Name = "Footer"
+footer.BackgroundTransparency = 1
+footer.Size = UDim2.new(1, -24, 0, 40)
+footer.Position = UDim2.new(0, 12, 1, -48)
+footer.Parent = card
+
+local buttons = Instance.new("Frame")
+buttons.BackgroundTransparency = 1
+buttons.Size = UDim2.new(1,0,1,0)
+buttons.Parent = footer
+local bl = Instance.new("UIListLayout")
+bl.FillDirection = Enum.FillDirection.Horizontal
+bl.HorizontalAlignment = Enum.HorizontalAlignment.Right
+bl.Padding = UDim.new(0,8)
+bl.Parent = buttons
+
+local function newBtn(text: string)
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.fromOffset(140, 36)
+	b.BackgroundColor3 = Color3.fromRGB(255,255,255)
+	b.TextColor3 = Color3.fromRGB(30,30,30)
+	b.TextScaled = true
+	b.Font = Enum.Font.GothamBold
+	b.Text = text
+	local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0,10); c.Parent = b
+	return b
+end
+
+local skipBtn = newBtn("Saltar"); skipBtn.Parent = buttons
+local nextBtn = newBtn("Siguiente"); nextBtn.Parent = buttons
+
+local idx = 1
+
+local function makeItem(text: string)
+	local t = Instance.new("TextLabel")
+	t.BackgroundTransparency = 0.2
+	t.TextWrapped = true
+	t.Size = UDim2.new(1, -6, 0, 28)
+	t.Font = Enum.Font.Gotham
+	t.TextScaled = true
+	t.TextColor3 = Color3.fromRGB(235,235,235)
+	t.Text = "• " .. text
+	local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0,8); c.Parent = t
+	return t
+end
+
+local function clearBody()
+	for _, ch in ipairs(body:GetChildren()) do
+		if ch:IsA("GuiObject") and ch ~= layout then ch:Destroy() end
+	end
+end
+
 local function buildUI()
-	local sg = Instance.new("ScreenGui")
-	sg.Name = "TutorialUI"
-	sg.IgnoreGuiInset = true
-	sg.DisplayOrder = 1000
-	sg.ResetOnSpawn = false
+	local step = STEPS[idx]; if not step then return end
+	title.Text = step.title
+	clearBody()
 
-	-- Fondo sutil
-	local dim = Instance.new("Frame")
-	dim.BackgroundColor3 = Color3.fromRGB(0,0,0)
-	dim.BackgroundTransparency = 0.35
-	dim.Size = UDim2.fromScale(1,1)
-	dim.Parent = sg
-
-	-- Card contenedor (responsive)
-	local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
-	local card = Instance.new("Frame")
-	card.Name = "Card"
-	card.AnchorPoint = Vector2.new(0.5,0.5)
-	card.Position = UDim2.fromScale(0.5, 0.5)
-	card.Size = isMobile and UDim2.fromScale(0.9, 0.7) or UDim2.fromScale(0.6, 0.55)
-	card.BackgroundColor3 = Color3.fromRGB(22,22,22)
-	card.BackgroundTransparency = 0.05
-	card.Parent = dim
-	local corner = Instance.new("UICorner", card); corner.CornerRadius = UDim.new(0, 14)
-	local stroke = Instance.new("UIStroke", card); stroke.Thickness = 2; stroke.Color = Color3.fromRGB(255,255,255); stroke.Transparency = 0.85
-
-	-- Padding interno
-	local pad = Instance.new("UIPadding", card)
-	pad.PaddingTop    = UDim.new(0, isMobile and 14 or 18)
-	pad.PaddingBottom = UDim.new(0, isMobile and 14 or 18)
-	pad.PaddingLeft   = UDim.new(0, isMobile and 14 or 20)
-	pad.PaddingRight  = UDim.new(0, isMobile and 14 or 20)
-
-	-- Contenido desplazable (para pantallas pequeñas)
-	local body = Instance.new("ScrollingFrame")
-	body.Name = "Body"
-	body.BackgroundTransparency = 1
-	body.BorderSizePixel = 0
-	body.CanvasSize = UDim2.new(0,0,0,0)
-	body.AutomaticCanvasSize = Enum.AutomaticSize.Y
-	body.ScrollBarThickness = 6
-	body.Size = UDim2.new(1,0,1,-56) -- deja sitio para el botón
-	body.Parent = card
-	local list = Instance.new("UIListLayout", body)
-	list.SortOrder = Enum.SortOrder.LayoutOrder
-	list.Padding = UDim.new(0, 10)
-
-	local function H(text)
-		local t = Instance.new("TextLabel")
-		t.BackgroundTransparency = 1
-		t.TextColor3 = Color3.fromRGB(255,255,255)
-		t.TextTransparency = 0
-		t.Font = Enum.Font.GothamBlack
-		t.TextScaled = true
-		t.Size = UDim2.new(1,0,0, isMobile and 40 or 44)
-		t.Text = text
-		return t
+	-- >>> FIX CRÍTICO: nada de Body:AddItem(...)
+	for _, line in ipairs(string.split(step.body, ". ")) do
+		if line ~= "" then
+			local item = makeItem(line .. ".")
+			item.Parent = body
+		end
 	end
 
-	local function P(text)
-		local t = Instance.new("TextLabel")
-		t.BackgroundTransparency = 1
-		t.TextColor3 = Color3.fromRGB(230,230,230)
-		t.TextWrapped = true
-		t.Font = Enum.Font.Gotham
-		t.TextScaled = true
-		t.Size = UDim2.new(1,0,0, isMobile and 48 or 52)
-		t.Text = text
-		return t
-	end
-
-	body:AddItem(H("Welcome to Marine Rescue Tycoon!"))
-	body:AddItem(P("1) Use your net to capture fish.\n2) Choose to cure or release.\n3) Earn tickets to upgrade your tank.\n4) Beat everyone and build the best aquarium!\n\nNote: this is a beta—more features coming soon."))
-
-	-- Botón
-	local btn = Instance.new("TextButton")
-	btn.Name = "Accept"
-	btn.AnchorPoint = Vector2.new(0.5,1)
-	btn.Position = UDim2.new(0.5,0,1,-8)
-	btn.Size = UDim2.new(1, - (isMobile and 12 or 16), 0, 42)
-	btn.BackgroundColor3 = Color3.fromRGB(0, 153, 255)
-	btn.TextColor3 = Color3.fromRGB(255,255,255)
-	btn.Font = Enum.Font.GothamBold
-	btn.TextScaled = true
-	btn.Text = "I understand — play!"
-	btn.Parent = card
-	local btnCorner = Instance.new("UICorner", btn); btnCorner.CornerRadius = UDim.new(0, 10)
-
-	btn.MouseButton1Click:Connect(function()
-		TutorialAccept:FireServer()
-		sg:Destroy()
-	end)
-
-	return sg
+	card.BackgroundTransparency = 0.5
+	TweenService:Create(card, TweenInfo.new(0.18), {BackgroundTransparency = 0.35}):Play()
+	nextBtn.Text = (idx >= #STEPS) and "Entendido" or "Siguiente"
 end
 
--- Mostrar solo si no está aceptado
-local function maybeShow()
-	if alreadyAccepted() then return end
-	local ui = buildUI()
-	ui.Parent = plr:WaitForChild("PlayerGui")
-end
-
--- Reacciona si el atributo llega después
-plr:GetAttributeChangedSignal("TutorialAccepted"):Connect(function()
-	if alreadyAccepted() then
-		local gui = plr.PlayerGui:FindFirstChild("TutorialUI")
-		if gui then gui:Destroy() end
+nextBtn.MouseButton1Click:Connect(function()
+	if idx < #STEPS then
+		idx += 1
+		buildUI()
+	else
+		gui.Enabled = false
 	end
 end)
+skipBtn.MouseButton1Click:Connect(function() gui.Enabled = false end)
 
-maybeShow()
+buildUI()

@@ -1,26 +1,28 @@
-local M = {}
+--!strict
+local Workspace = game:GetService("Workspace")
+local Config = require(game.ReplicatedStorage.Aquarium:WaitForChild("Config"))
 
-function M.findDeck()
-	local pier = workspace:FindFirstChild("Pier")
-	return pier and pier:FindFirstChild("Deck") or nil
+local Utils = {}
+
+function Utils.GetAquariumsFolder(): Folder
+	local f = Workspace:FindFirstChild(Config.WorkspaceAquariumsFolder)
+	if not f then
+		f = Instance.new("Folder")
+		f.Name = Config.WorkspaceAquariumsFolder
+		f.Parent = Workspace
+	end
+	return f
 end
 
-function M.makePart(parent,size,cf,mat,color,anch,coll,name,transp)
-	local p = Instance.new("Part")
-	p.Size=size; p.CFrame=cf; p.Anchored=anch; p.CanCollide=coll
-	p.Material=mat; p.Color=color or Color3.new(1,1,1); p.Name=name or "Part"
-	p.Transparency = transp or 0
-	p.TopSurface = Enum.SurfaceType.Smooth; p.BottomSurface = Enum.SurfaceType.Smooth
-	p.CastShadow=false; p.Parent=parent; return p
+-- Devuelve el modelo de acuario propiedad del jugador si existe
+function Utils.GetPlayerAquariumModel(userId: number): Model?
+	local folder = Utils.GetAquariumsFolder()
+	for _, mdl in ipairs(folder:GetChildren()) do
+		if mdl:IsA("Model") and (mdl:GetAttribute(Config.OwnerAttribute) == userId) then
+			return mdl
+		end
+	end
+	return nil
 end
 
-function M.makePath(parent,centerCF,size,name)
-	return M.makePart(parent,size,centerCF,Enum.Material.WoodPlanks,Color3.fromRGB(163,118,73),true,true,name or "Path")
-end
-
-function M.glass(parent,size,cf,name)
-	local g = M.makePart(parent,size,cf,Enum.Material.Glass,Color3.fromRGB(170,230,255),true,true,name or "Glass",0.2)
-	return g
-end
-
-return M
+return Utils
