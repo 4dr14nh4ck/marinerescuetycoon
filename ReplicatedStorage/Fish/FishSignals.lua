@@ -1,23 +1,40 @@
 --!strict
+-- ReplicatedStorage/Fish/FishSignals.lua
+-- Punto único de truth para RemoteEvents relacionados con peces/red.
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local folder = ReplicatedStorage:FindFirstChild("FishSignals") or Instance.new("Folder")
-folder.Name = "FishSignals"
-folder.Parent = ReplicatedStorage
-
-local function ensureEvent(name: string): RemoteEvent
-	local e = folder:FindFirstChild(name) :: RemoteEvent
-	if not e then
-		e = Instance.new("RemoteEvent")
-		e.Name = name
-		e.Parent = folder
-	end
-	return e
+-- Carpeta contenedora (nombre esperado por CatchUI)
+local eventsFolder = ReplicatedStorage:FindFirstChild("FishEvents")
+if not eventsFolder then
+	eventsFolder = Instance.new("Folder")
+	eventsFolder.Name = "FishEvents"
+	eventsFolder.Parent = ReplicatedStorage
 end
 
-local Signals = {
-	RequestNet = ensureEvent("RequestNet"),     -- client->server
-	CaughtFish = ensureEvent("CaughtFish"),     -- server->client {value}
-}
+local function getOrCreateEvent(name: string): RemoteEvent
+	local ev = eventsFolder:FindFirstChild(name)
+	if not ev then
+		ev = Instance.new("RemoteEvent")
+		ev.Name = name
+		ev.Parent = eventsFolder
+	end
+	return ev :: RemoteEvent
+end
 
-return Signals
+-- Cliente -> Servidor: pedir lanzamiento de red
+local ThrowRequest = getOrCreateEvent("ThrowRequest")
+-- Servidor -> Cliente: resultado inmediato del lanzamiento (hit/miss, cooldown restante)
+local ThrowResult = getOrCreateEvent("ThrowResult")
+-- Servidor -> Cliente: abrir UI de captura (nombre esperado por CatchUI)
+local CatchPrompt = getOrCreateEvent("CatchPrompt")
+-- Cliente -> Servidor: jugador decide qué hacer con el pez (curar o liberar)
+local CatchDecision = getOrCreateEvent("CatchDecision")
+
+return {
+    Folder = eventsFolder,
+    ThrowRequest = ThrowRequest,
+    ThrowResult = ThrowResult,
+    CatchPrompt = CatchPrompt,
+    CatchDecision = CatchDecision,
+}
