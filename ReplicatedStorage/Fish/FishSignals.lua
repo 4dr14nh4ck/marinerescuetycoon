@@ -1,16 +1,15 @@
 --!strict
--- ReplicatedStorage/Fish/FishSignals.lua
--- RemoteEvents centralizados para red/peces + compat con CatchUI (CatchFeedback, CatchDecision)
+-- RemoteEvents centralizados para red/peces + UI
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local eventsFolder = ReplicatedStorage:FindFirstChild("FishEvents") :: Instance
-	if not eventsFolder then
-		local f = Instance.new("Folder")
-		f.Name = "FishEvents"
-		f.Parent = ReplicatedStorage
-		eventsFolder = f
-	end
+local eventsFolder = ReplicatedStorage:FindFirstChild("FishEvents")
+if not eventsFolder then
+	local f = Instance.new("Folder")
+	f.Name = "FishEvents"
+	f.Parent = ReplicatedStorage
+	eventsFolder = f
+end
 
 local function getOrCreateEvent(name: string): RemoteEvent
 	local ev = eventsFolder:FindFirstChild(name)
@@ -24,12 +23,13 @@ end
 
 -- Cliente -> Servidor
 local ThrowRequest   = getOrCreateEvent("ThrowRequest")
-local CatchDecision  = getOrCreateEvent("CatchDecision")   -- UI envía curar/liberar
+local CatchDecision  = getOrCreateEvent("CatchDecision")    -- Cure/Release
 
 -- Servidor -> Cliente
-local ThrowResult    = getOrCreateEvent("ThrowResult")     -- info técnica (cooldown, hit/miss)
-local CatchPrompt    = getOrCreateEvent("CatchPrompt")     -- abre UI de decisión
-local CatchFeedback  = getOrCreateEvent("CatchFeedback")   -- mensaje “¡Felicidades!” / “fallaste”
+local ThrowResult    = getOrCreateEvent("ThrowResult")      -- hit/miss, pos, cooldown
+local CatchPrompt    = getOrCreateEvent("CatchPrompt")      -- abre UI de decisión
+local CatchFeedback  = getOrCreateEvent("CatchFeedback")    -- strings (compat UI)
+local CureProgress   = getOrCreateEvent("CureProgress")     -- progreso de curación (uid, tLeft, tTotal)
 
 return {
 	Folder        = eventsFolder,
@@ -38,4 +38,5 @@ return {
 	CatchPrompt   = CatchPrompt,
 	CatchDecision = CatchDecision,
 	CatchFeedback = CatchFeedback,
+	CureProgress  = CureProgress,
 }

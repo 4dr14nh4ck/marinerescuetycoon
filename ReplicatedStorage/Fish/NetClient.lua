@@ -1,5 +1,5 @@
 --!strict
--- Cliente de la Tool "Net": calcula el rayo, pide lanzamiento y muestra feedback visible.
+-- Net Tool client: world "MISSED!" only (no screen toast here).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -10,10 +10,7 @@ local FishSignals = require(ReplicatedStorage:WaitForChild("Fish"):WaitForChild(
 
 local module = {}
 
--- === Helpers visuales ===
-
 local function spawnMissBillboard(worldPos: Vector3)
-	-- Parte ancla invisible
 	local anchor = Instance.new("Part")
 	anchor.Name = "MissAnchor"
 	anchor.Anchored = true
@@ -23,7 +20,6 @@ local function spawnMissBillboard(worldPos: Vector3)
 	anchor.CFrame = CFrame.new(worldPos)
 	anchor.Parent = Workspace
 
-	-- Billboard “MISSED!”
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "MissBillboard"
 	gui.AlwaysOnTop = true
@@ -41,41 +37,31 @@ local function spawnMissBillboard(worldPos: Vector3)
 	label.TextColor3 = Color3.fromRGB(255, 80, 80)
 	label.Parent = gui
 
-	-- Autodestruir
-	task.delay(1.4, function()
-		if anchor then anchor:Destroy() end
-	end)
+	task.delay(1.4, function() if anchor then anchor:Destroy() end end)
 end
 
--- === Cálculo del tiro ===
 local function computeShotVector(): (Vector3, Vector3)
-	local camera = Workspace.CurrentCamera
+	local cam = Workspace.CurrentCamera
 	local mouse = UserInputService:GetMouseLocation()
-	local ray = camera:ViewportPointToRay(mouse.X, mouse.Y)
-	return ray.Origin, ray.Direction * 1000 -- el servidor clampea
+	local ray = cam:ViewportPointToRay(mouse.X, mouse.Y)
+	return ray.Origin, ray.Direction * 1000
 end
 
 function module.BindTool(tool: Tool)
 	if tool:GetAttribute("NetBound") then return end
 	tool:SetAttribute("NetBound", true)
 
-	local coolingDownUntil = 0.0
-
-	local function onActivated()
+	local untilTime = 0.0
+	tool.Activated:Connect(function()
 		local now = time()
-		if now < coolingDownUntil then
-			return
-		end
+		if now < untilTime then return end
 		local origin, dir = computeShotVector()
 		FishSignals.ThrowRequest:FireServer({ origin = origin, direction = dir })
-	end
+	end)
 
-	tool.Activated:Connect(onActivated)
-
-	-- Feedback técnico + visual
 	FishSignals.ThrowResult.OnClientEvent:Connect(function(res)
 		if not res or not res.ok then return end
-		coolingDownUntil = time() + (res.cooldown or 0)
+		untilTime = time() + (res.cooldown or 0)
 		if res.hit == false and typeof(res.pos) == "Vector3" then
 			spawnMissBillboard(res.pos)
 		end

@@ -1,115 +1,144 @@
--- Catch UI (client): English + capacity error only (no "curing" messages)
+--!strict
+-- Decision UI (CURE / RELEASE) + curing countdown (EN).
+-- Shows no "miss" toast (world billboard is handled by NetClient).
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local plr = Players.LocalPlayer
+local FishSignals = require(ReplicatedStorage:WaitForChild("Fish"):WaitForChild("FishSignals"))
+local player = Players.LocalPlayer
 
-local ev = ReplicatedStorage:WaitForChild("FishEvents")
-local CatchPrompt   = ev:WaitForChild("CatchPrompt")
-local CatchDecision = ev:WaitForChild("CatchDecision")
-local CatchFeedback = ev:WaitForChild("CatchFeedback")
+local screen = Instance.new("ScreenGui")
+screen.Name = "CatchUI"
+screen.ResetOnSpawn = false
+screen.IgnoreGuiInset = false
+screen.Parent = player:WaitForChild("PlayerGui")
 
-local sg = Instance.new("ScreenGui")
-sg.Name = "CatchUI"
-sg.ResetOnSpawn = false
-sg.Parent = plr:WaitForChild("PlayerGui")
+-- Modal
+local modal = Instance.new("Frame")
+modal.Name = "Decision"
+modal.AnchorPoint = Vector2.new(0.5, 0.5)
+modal.Position = UDim2.fromScale(0.5, 0.75)
+modal.Size = UDim2.fromOffset(420, 120)
+modal.BackgroundColor3 = Color3.fromRGB(15,20,30)
+modal.BackgroundTransparency = 0.2
+modal.Visible = false
+modal.Parent = screen
+local mC = Instance.new("UICorner"); mC.CornerRadius = UDim.new(0, 12); mC.Parent = modal
 
-local frame = Instance.new("Frame")
-frame.AnchorPoint = Vector2.new(0.5,0.5)
-frame.Position = UDim2.new(0.5,0,0.82,0)
-frame.Size = UDim2.new(0, 420, 0, 120)
-frame.BackgroundTransparency = 0.15
-frame.BackgroundColor3 = Color3.fromRGB(15,15,18)
-frame.Visible = false
-frame.Parent = sg
+local title = Instance.new("TextLabel")
+title.BackgroundTransparency = 1
+title.Size = UDim2.fromOffset(420, 32)
+title.Position = UDim2.fromOffset(0, 8)
+title.Text = "You caught a fish!"
+title.TextScaled = true
+title.Font = Enum.Font.GothamBold
+title.TextColor3 = Color3.fromRGB(255,255,255)
+title.Parent = modal
 
-local label = Instance.new("TextLabel")
-label.Size = UDim2.new(1,0,0.45,0)
-label.TextScaled = true
-label.BackgroundTransparency = 1
-label.Font = Enum.Font.GothamBold
-label.TextColor3 = Color3.fromRGB(255,255,255)
-label.Parent = frame
+local container = Instance.new("Frame")
+container.BackgroundTransparency = 1
+container.Size = UDim2.fromOffset(420, 64)
+container.Position = UDim2.fromOffset(0, 48)
+container.Parent = modal
 
-local btnCure = Instance.new("TextButton")
-btnCure.Size = UDim2.new(0.5, -6, 0.45, -6)
-btnCure.Position = UDim2.new(0, 0, 0.55, 6)
-btnCure.Text = "Cure"
-btnCure.TextScaled = true
-btnCure.Font = Enum.Font.GothamBold
-btnCure.BackgroundColor3 = Color3.fromRGB(46, 180, 130)
-btnCure.TextColor3 = Color3.fromRGB(255,255,255)
-btnCure.Parent = frame
+local cureBtn = Instance.new("TextButton")
+cureBtn.Name = "Cure"
+cureBtn.Size = UDim2.fromOffset(190, 52)
+cureBtn.Position = UDim2.fromOffset(16, 6)
+cureBtn.Text = "CURE"
+cureBtn.TextScaled = true
+cureBtn.Font = Enum.Font.GothamBold
+cureBtn.BackgroundColor3 = Color3.fromRGB(90,200,120)
+cureBtn.TextColor3 = Color3.fromRGB(0,0,0)
+cureBtn.Parent = container
+local c1 = Instance.new("UICorner"); c1.CornerRadius = UDim.new(0, 10); c1.Parent = cureBtn
 
-local btnRelease = Instance.new("TextButton")
-btnRelease.Size = UDim2.new(0.5, -6, 0.45, -6)
-btnRelease.Position = UDim2.new(0.5, 6, 0.55, 6)
-btnRelease.Text = "Release"
-btnRelease.TextScaled = true
-btnRelease.Font = Enum.Font.GothamBold
-btnRelease.BackgroundColor3 = Color3.fromRGB(220, 90, 90)
-btnRelease.TextColor3 = Color3.fromRGB(255,255,255)
-btnRelease.Parent = frame
+local releaseBtn = Instance.new("TextButton")
+releaseBtn.Name = "Release"
+releaseBtn.Size = UDim2.fromOffset(190, 52)
+releaseBtn.Position = UDim2.fromOffset(214, 6)
+releaseBtn.Text = "RELEASE"
+releaseBtn.TextScaled = true
+releaseBtn.Font = Enum.Font.GothamBold
+releaseBtn.BackgroundColor3 = Color3.fromRGB(240,110,110)
+releaseBtn.TextColor3 = Color3.fromRGB(0,0,0)
+releaseBtn.Parent = container
+local c2 = Instance.new("UICorner"); c2.CornerRadius = UDim.new(0, 10); c2.Parent = releaseBtn
 
--- Small toast for errors (bottom-middle)
+-- Toast for success states only (no miss here)
 local toast = Instance.new("TextLabel")
-toast.AnchorPoint = Vector2.new(0.5,1)
-toast.Position = UDim2.new(0.5,0,1,-12)
-toast.Size = UDim2.new(0, 520, 0, 36)
-toast.BackgroundTransparency = 0.2
-toast.BackgroundColor3 = Color3.fromRGB(0,0,0)
-toast.TextColor3 = Color3.fromRGB(255,255,255)
+toast.BackgroundTransparency = 1
+toast.Size = UDim2.fromOffset(700, 38)
+toast.Position = UDim2.fromScale(0.5, 0.08)
+toast.AnchorPoint = Vector2.new(0.5, 0.5)
+toast.Text = ""
 toast.TextScaled = true
-toast.Font = Enum.Font.GothamSemibold
+toast.Font = Enum.Font.GothamBold
+toast.TextColor3 = Color3.fromRGB(255,255,255)
 toast.Visible = false
-toast.Parent = sg
+toast.Parent = screen
 
-local function showToast(msg, dur)
+local countdown = Instance.new("TextLabel")
+countdown.BackgroundTransparency = 0.25
+countdown.BackgroundColor3 = Color3.fromRGB(10,15,25)
+countdown.Size = UDim2.fromOffset(260, 40)
+countdown.Position = UDim2.fromScale(0.5, 0.9)
+countdown.AnchorPoint = Vector2.new(0.5, 0.5)
+countdown.Text = ""
+countdown.TextScaled = true
+countdown.Font = Enum.Font.GothamMedium
+countdown.TextColor3 = Color3.fromRGB(235,240,255)
+countdown.Visible = false
+countdown.Parent = screen
+local cc = Instance.new("UICorner"); cc.CornerRadius = UDim.new(0, 10); cc.Parent = countdown
+
+local currentFish: BasePart? = nil
+
+local function showToast(msg: string, color: Color3, dur: number)
 	toast.Text = msg
+	toast.TextColor3 = color
 	toast.Visible = true
-	task.delay(dur or 2.2, function()
-		if toast then toast.Visible = false end
-	end)
+	task.delay(dur, function() if toast then toast.Visible = false end end)
 end
 
-local countdownTime = 10
-local conns = {}
-local function clearConns() for _,c in ipairs(conns) do pcall(function() c:Disconnect() end) end table.clear(conns) end
-local function hidePrompt() frame.Visible = false; clearConns() end
-
-local function showCatch(rarity)
-	local t = countdownTime
-	label.Text = ("You caught a fish (%s) • Decide in %ds"):format(rarity, t)
-	frame.Visible = true
-
-	conns[#conns+1] = btnCure.MouseButton1Click:Connect(function()
-		CatchDecision:FireServer("CURE", rarity, nil)
-		hidePrompt()
-	end)
-	conns[#conns+1] = btnRelease.MouseButton1Click:Connect(function()
-		CatchDecision:FireServer("RELEASE", rarity, nil)
-		hidePrompt()
-	end)
-
-	task.spawn(function()
-		while frame.Visible and t > 0 do
-			task.wait(1); t -= 1
-			if frame.Visible then
-				label.Text = ("You caught a fish (%s) • Decide in %ds"):format(rarity, t)
-			end
-		end
-		if frame.Visible then
-			CatchDecision:FireServer("TIMEOUT", rarity, nil)
-			hidePrompt()
-		end
-	end)
-end
-
--- Only error feedback (tank full)
-CatchFeedback.OnClientEvent:Connect(function(payload)
-	if typeof(payload) ~= "table" then return end
-	if payload.type == "ERROR" and payload.code == "TANK_FULL" then
-		showToast(payload.message or "Tank is full — upgrade capacity.", 3)
+-- Feedback (strings). Ignore "Miss" here to avoid duplicate text.
+FishSignals.CatchFeedback.OnClientEvent:Connect(function(kind: string, message: string)
+	if kind == "Cured" then
+		showToast(message or "Fish cured!", Color3.fromRGB(130,210,120), 1.4)
+	elseif kind == "Released" then
+		showToast(message or "Fish released!", Color3.fromRGB(240,200,120), 1.2)
 	end
 end)
 
-CatchPrompt.OnClientEvent:Connect(showCatch)
+-- Open decision
+FishSignals.CatchPrompt.OnClientEvent:Connect(function(data)
+	currentFish = data and data.Fish
+	modal.Visible = true
+end)
+
+-- Send decision
+cureBtn.MouseButton1Click:Connect(function()
+	if not currentFish then return end
+	FishSignals.CatchDecision:FireServer({ Fish = currentFish :: BasePart, Choice = "Cure" })
+	modal.Visible = false
+end)
+
+releaseBtn.MouseButton1Click:Connect(function()
+	if not currentFish then return end
+	FishSignals.CatchDecision:FireServer({ Fish = currentFish :: BasePart, Choice = "Release" })
+	modal.Visible = false
+end)
+
+-- Cure countdown
+FishSignals.CureProgress.OnClientEvent:Connect(function(p)
+	if not p or typeof(p.secondsLeft) ~= "number" or typeof(p.total) ~= "number" then return end
+	if p.secondsLeft > 0 then
+		countdown.Visible = true
+		local elapsed = p.total - p.secondsLeft
+		countdown.Text = string.format("Curing... %ds / %ds", elapsed, p.total)
+	else
+		countdown.Visible = false
+	end
+end)
+
+print("[CatchUI] Ready")
