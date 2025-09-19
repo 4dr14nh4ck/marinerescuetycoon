@@ -16,9 +16,8 @@ local function ensureEvent(name: string): RemoteEvent
 end
 
 local Signals = {
-	StartedCatch = ensureEvent("StartedCatch"), -- server->client
-	CaughtFish = ensureEvent("CaughtFish"),     -- server->client {tierName,value}
 	RequestNet = ensureEvent("RequestNet"),     -- client->server
+	CaughtFish = ensureEvent("CaughtFish"),     -- server->client {value}
 }
 
 return Signals

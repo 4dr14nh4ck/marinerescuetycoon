@@ -1,70 +1,55 @@
--- ServerScriptService/Fish/FishSpawner
 --!strict
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+-- Spawner que ubica peces sobre agua de Terrain (Material.Water)
 local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- Carpetas esperadas (ajústalas si en tu repo se llaman distinto)
-local ZONES = Workspace:WaitForChild("WaterZones") -- Parts/Models que marcan agua
-local MODELS = ReplicatedStorage:WaitForChild("FishModels") -- Modelos de peces listos para clonar
+local FishConfig = require(ReplicatedStorage.Fish:WaitForChild("FishConfig"))
 
-local MAX_FISH = 60
-local INTERVAL = 6
+local fishFolder = Workspace:FindFirstChild("Fish") or Instance.new("Folder")
+fishFolder.Name = "Fish"
+fishFolder.Parent = Workspace
 
-local function getZones(): {BasePart}
-	local t = {}
-	for _, obj in ipairs(ZONES:GetDescendants()) do
-		if obj:IsA("BasePart") then table.insert(t, obj) end
-	end
-	return t
+local params = RaycastParams.new()
+params.IgnoreWater = false
+params.FilterType = Enum.RaycastFilterType.Blacklist
+params.FilterDescendantsInstances = {fishFolder}
+
+local function randomXZ(radius: number): (number, number)
+	return math.random(-radius, radius), math.random(-radius, radius)
 end
 
-local zones = getZones()
-local function randomPosIn(part: BasePart): Vector3
-	local size = part.Size
-	local cf = part.CFrame
-	local x = (math.random() - 0.5) * (size.X - 2)
-	local z = (math.random() - 0.5) * (size.Z - 2)
-	local y = (math.random() - 0.5) * math.max(2, math.min(6, size.Y)) -- ligera variación en Y
-	return (cf * CFrame.new(x, y, z)).Position
+local function findWaterPosition(radius: number): Vector3?
+	for _ = 1, 40 do
+		local rx, rz = randomXZ(radius)
+		local origin = Vector3.new(rx, 500, rz)
+		local dir = Vector3.new(0, -1000, 0)
+		local hit = Workspace:Raycast(origin, dir, params)
+		if hit and hit.Material == Enum.Material.Water then
+			return hit.Position + Vector3.new(0, 1.5, 0)
+		end
+	end
+	return nil
 end
 
 local function spawnOne()
-	if #Workspace:GetChildren() > 8_000 then return end -- seguridad
-	local fishFolder = Workspace:FindFirstChild("Fish") or Instance.new("Folder")
-	fishFolder.Name = "Fish"
-	fishFolder.Parent = Workspace
+	if #fishFolder:GetChildren() >= FishConfig.MaxFishInWorld then return end
+	local pos = findWaterPosition(FishConfig.WorldRadius)
+	if not pos then return end
 
-	if #fishFolder:GetChildren() >= MAX_FISH then return end
-	if #zones == 0 then return end
-
-	-- Modelo aleatorio
-	local candidates = {}
-	for _, m in ipairs(MODELS:GetChildren()) do
-		if m:IsA("Model") then table.insert(candidates, m) end
-	end
-	if #candidates == 0 then return end
-
-	local model = candidates[math.random(1, #candidates)]:Clone()
-	model:SetAttribute("Spawner", true)
-
-	-- Zona aleatoria
-	local zonePart = zones[math.random(1, #zones)]
-	model:PivotTo(CFrame.new(randomPosIn(zonePart)))
-	model.Parent = fishFolder
-
-	-- Movimiento simple (si no tienes IA, baja gravedad/flotación)
-	for _, p in ipairs(model:GetDescendants()) do
-		if p:IsA("BasePart") then
-			p.Anchored = false
-			p.CanCollide = false
-			p.AssemblyLinearVelocity = Vector3.new( math.random(-2,2), math.random(-1,1), math.random(-2,2) )
-		end
-	end
+	-- Si en el futuro usas modelos, reemplaza este Part por un Model clon.
+	local fish = Instance.new("Part")
+	fish.Name = "Fish"
+	fish.Size = Vector3.new(1,1,2)
+	fish.Anchored = false
+	fish.CanCollide = false
+	fish.Position = pos
+	fish.Parent = fishFolder
+	fish.AssemblyLinearVelocity = Vector3.new(math.random(-3,3), math.random(-1,1), math.random(-3,3))
 end
 
 task.spawn(function()
 	while true do
-		task.wait(INTERVAL)
+		task.wait(FishConfig.SpawnInterval)
 		spawnOne()
 	end
 end)

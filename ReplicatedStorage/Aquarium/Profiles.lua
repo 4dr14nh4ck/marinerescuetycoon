@@ -1,14 +1,9 @@
 -- ReplicatedStorage/Aquarium/Profiles.lua
 --!strict
--- Perfil simple en memoria (puedes migrarlo a DataStore mas adelante)
 local Players = game:GetService("Players")
 local Config = require(game.ReplicatedStorage.Aquarium:WaitForChild("Config"))
 
-type Profile = {
-	UserId: number,
-	SlotsOwned: number,
-}
-
+type Profile = { UserId: number, SlotsOwned: number }
 local Profiles: {[number]: Profile} = {}
 
 local M = {}
@@ -27,7 +22,6 @@ function M.SetSlots(userId: number, slots: number)
 	p.SlotsOwned = math.clamp(slots, 0, Config.MaxSlotsPerAquarium)
 end
 
--- Limpia perfiles al salir para no filtrar memoria en Studio
 Players.PlayerRemoving:Connect(function(plr)
 	Profiles[plr.UserId] = nil
 end)

@@ -1,6 +1,7 @@
 --!strict
 local Workspace = game:GetService("Workspace")
-local Config = require(game.ReplicatedStorage.Aquarium:WaitForChild("Config"))
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Config = require(ReplicatedStorage.Aquarium:WaitForChild("Config"))
 
 local Utils = {}
 
@@ -14,11 +15,10 @@ function Utils.GetAquariumsFolder(): Folder
 	return f
 end
 
--- Devuelve el modelo de acuario propiedad del jugador si existe
 function Utils.GetPlayerAquariumModel(userId: number): Model?
 	local folder = Utils.GetAquariumsFolder()
 	for _, mdl in ipairs(folder:GetChildren()) do
-		if mdl:IsA("Model") and (mdl:GetAttribute(Config.OwnerAttribute) == userId) then
+		if mdl:IsA("Model") and mdl:GetAttribute(Config.OwnerAttribute) == userId then
 			return mdl
 		end
 	end

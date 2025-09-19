@@ -1,26 +1,11 @@
--- ServerScriptService/Aquarium/OwnershipService.lua
 --!strict
--- FIX: require correcto de módulos (antes fallaba por pasar una string/tabla)
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Profiles = require(ReplicatedStorage.Aquarium:WaitForChild("Profiles"))
 local Config = require(ReplicatedStorage.Aquarium:WaitForChild("Config"))
+local Profiles = require(ReplicatedStorage.Aquarium:WaitForChild("Profiles"))
 local Utils = require(ReplicatedStorage.Aquarium:WaitForChild("Utils"))
 local Signals = require(ReplicatedStorage.Aquarium:WaitForChild("Signals"))
-
-local OwnershipService = {}
-
--- Busca un modelo de acuario libre en Workspace.Aquariums (OwnerUserId == 0 o nil)
-local function findFreeAquarium(): Model?
-	local folder = Utils.GetAquariumsFolder()
-	for _, mdl in ipairs(folder:GetChildren()) do
-		if mdl:IsA("Model") and (not mdl:GetAttribute(Config.OwnerAttribute) or mdl:GetAttribute(Config.OwnerAttribute) == 0) then
-			return mdl
-		end
-	end
-	return nil
-end
 
 local function markOwner(model: Model, userId: number)
 	model:SetAttribute(Config.OwnerAttribute, userId)
@@ -31,32 +16,39 @@ local function markOwner(model: Model, userId: number)
 	end
 end
 
-function OwnershipService.AssignAquarium(plr: Player)
+local function findFreeAquarium(): Model?
+	local f = Utils.GetAquariumsFolder()
+	for _, mdl in ipairs(f:GetChildren()) do
+		if mdl:IsA("Model") then
+			local attr = mdl:GetAttribute(Config.OwnerAttribute)
+			if not attr or attr == 0 then
+				return mdl
+			end
+		end
+	end
+	return nil
+end
+
+local function assign(plr: Player)
+	Profiles.Get(plr.UserId)
 	local existing = Utils.GetPlayerAquariumModel(plr.UserId)
 	if existing then
 		markOwner(existing, plr.UserId)
 		Signals.AssignedAquarium:FireClient(plr, existing)
-		return existing
+		return
 	end
-
 	local free = findFreeAquarium()
-	if free then
-		markOwner(free, plr.UserId)
-		Signals.AssignedAquarium:FireClient(plr, free)
-		return free
+	if not free then
+		local folder = Utils.GetAquariumsFolder()
+		free = Instance.new("Model")
+		free.Name = ("Aquarium_%d"):format(plr.UserId)
+		free.Parent = folder
 	end
-
-	-- Si no hay modelos precolocados, crea uno simple contenedor (no geometría)
-	local folder = Utils.GetAquariumsFolder()
-	local mdl = Instance.new("Model")
-	mdl.Name = ("Aquarium_%d"):format(plr.UserId)
-	mdl.Parent = folder
-	markOwner(mdl, plr.UserId)
-	Signals.AssignedAquarium:FireClient(plr, mdl)
-	return mdl
+	markOwner(free, plr.UserId)
+	Signals.AssignedAquarium:FireClient(plr, free)
 end
 
-function OwnershipService.ReleaseAquarium(plr: Player)
+local function release(plr: Player)
 	local mdl = Utils.GetPlayerAquariumModel(plr.UserId)
 	if not mdl then return end
 	mdl:SetAttribute(Config.OwnerAttribute, 0)
@@ -67,13 +59,5 @@ function OwnershipService.ReleaseAquarium(plr: Player)
 	end
 end
 
-Players.PlayerAdded:Connect(function(plr)
-	Profiles.Get(plr.UserId) -- asegúranos de tener perfil
-	OwnershipService.AssignAquarium(plr)
-end)
-
-Players.PlayerRemoving:Connect(function(plr)
-	OwnershipService.ReleaseAquarium(plr)
-end)
-
-return OwnershipService
+Players.PlayerAdded:Connect(assign)
+Players.PlayerRemoving:Connect(release)

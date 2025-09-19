@@ -1,5 +1,4 @@
 --!strict
--- Señales/Remotes compartidos
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local folder = ReplicatedStorage:FindFirstChild("AquariumSignals") or Instance.new("Folder")
@@ -17,8 +16,8 @@ local function ensureEvent(name: string): RemoteEvent
 end
 
 local Signals = {
-	AssignedAquarium = ensureEvent("AssignedAquarium"), -- server->client {modelRef or id}
-	UpgradeRequested = ensureEvent("UpgradeRequested"), -- client->server {slotName, upgradeId}
+	AssignedAquarium = ensureEvent("AssignedAquarium"), -- server->client
+	UpgradeRequested = ensureEvent("UpgradeRequested"), -- client->server
 }
 
 return Signals
