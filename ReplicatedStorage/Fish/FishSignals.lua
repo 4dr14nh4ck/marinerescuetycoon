@@ -1,16 +1,16 @@
 --!strict
 -- ReplicatedStorage/Fish/FishSignals.lua
--- Punto único de truth para RemoteEvents relacionados con peces/red.
+-- RemoteEvents centralizados para red/peces + compat con CatchUI (CatchFeedback, CatchDecision)
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- Carpeta contenedora (nombre esperado por CatchUI)
-local eventsFolder = ReplicatedStorage:FindFirstChild("FishEvents")
-if not eventsFolder then
-	eventsFolder = Instance.new("Folder")
-	eventsFolder.Name = "FishEvents"
-	eventsFolder.Parent = ReplicatedStorage
-end
+local eventsFolder = ReplicatedStorage:FindFirstChild("FishEvents") :: Instance
+	if not eventsFolder then
+		local f = Instance.new("Folder")
+		f.Name = "FishEvents"
+		f.Parent = ReplicatedStorage
+		eventsFolder = f
+	end
 
 local function getOrCreateEvent(name: string): RemoteEvent
 	local ev = eventsFolder:FindFirstChild(name)
@@ -22,19 +22,20 @@ local function getOrCreateEvent(name: string): RemoteEvent
 	return ev :: RemoteEvent
 end
 
--- Cliente -> Servidor: pedir lanzamiento de red
-local ThrowRequest = getOrCreateEvent("ThrowRequest")
--- Servidor -> Cliente: resultado inmediato del lanzamiento (hit/miss, cooldown restante)
-local ThrowResult = getOrCreateEvent("ThrowResult")
--- Servidor -> Cliente: abrir UI de captura (nombre esperado por CatchUI)
-local CatchPrompt = getOrCreateEvent("CatchPrompt")
--- Cliente -> Servidor: jugador decide qué hacer con el pez (curar o liberar)
-local CatchDecision = getOrCreateEvent("CatchDecision")
+-- Cliente -> Servidor
+local ThrowRequest   = getOrCreateEvent("ThrowRequest")
+local CatchDecision  = getOrCreateEvent("CatchDecision")   -- UI envía curar/liberar
+
+-- Servidor -> Cliente
+local ThrowResult    = getOrCreateEvent("ThrowResult")     -- info técnica (cooldown, hit/miss)
+local CatchPrompt    = getOrCreateEvent("CatchPrompt")     -- abre UI de decisión
+local CatchFeedback  = getOrCreateEvent("CatchFeedback")   -- mensaje “¡Felicidades!” / “fallaste”
 
 return {
-    Folder = eventsFolder,
-    ThrowRequest = ThrowRequest,
-    ThrowResult = ThrowResult,
-    CatchPrompt = CatchPrompt,
-    CatchDecision = CatchDecision,
+	Folder        = eventsFolder,
+	ThrowRequest  = ThrowRequest,
+	ThrowResult   = ThrowResult,
+	CatchPrompt   = CatchPrompt,
+	CatchDecision = CatchDecision,
+	CatchFeedback = CatchFeedback,
 }
