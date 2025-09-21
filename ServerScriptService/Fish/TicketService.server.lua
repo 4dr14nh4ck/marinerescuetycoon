@@ -1,4 +1,4 @@
--- ServerScriptService/Aquarium/TicketService.server.lua
+-- ServerScriptService/Fish/TicketService.server.lua
 local SSS = game:GetService("ServerScriptService")
 
 local function requireTS()
@@ -7,13 +7,13 @@ local function requireTS()
 		local stats = SSS:FindFirstChild("Stats")
 		if stats then mod = stats:FindFirstChild("TicketService") end
 	end
-	if not mod then warn("[Aquarium.TicketService] TicketService module NO encontrado."); return nil end
+	if not mod then warn("[Fish.TicketService] TicketService module NO encontrado."); return nil end
 	local ok, svc = pcall(require, mod)
-	if not ok then warn("[Aquarium.TicketService] require falló:", svc); return nil end
+	if not ok then warn("[Fish.TicketService] require falló:", svc); return nil end
 	return svc
 end
 
 local TS = requireTS()
 if not TS then return end
 
-_G.TicketService = { Get=TS.Get, Set=TS.Set, Add=TS.Add, Changed=TS.Changed }
+_G.TicketService = _G.TicketService or { Get=TS.Get, Set=TS.Set, Add=TS.Add, Changed=TS.Changed }
