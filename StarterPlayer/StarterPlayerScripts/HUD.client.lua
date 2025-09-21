@@ -1,52 +1,58 @@
---!strict
--- Lee leaderstats (lv, Tickets, Fish) y refleja cambios. No crea ni resetea nada.
+-- StarterPlayer/StarterPlayerScripts/HUD.client.lua
 local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local pg = player:WaitForChild("PlayerGui")
+local LocalPlayer = Players.LocalPlayer
 
-local gui = Instance.new("ScreenGui")
-gui.Name = "HUD"
-gui.ResetOnSpawn = false
-gui.Parent = pg
+-- 1) Referencia al GUI que contiene los textos del HUD
+--    Si tu ScreenGui no es el parent del script, cámbialo por la ruta correcta.
+local rootGui = script.Parent  -- normalmente el Script está dentro del ScreenGui del HUD
 
-local label = Instance.new("TextLabel")
-label.Size = UDim2.new(0, 360, 0, 26)
-label.Position = UDim2.new(0, 10, 0, 10)
-label.BackgroundTransparency = 0.3
-label.TextScaled = true
-label.Font = Enum.Font.GothamBold
-label.Parent = gui
+-- Helper para localizar TextLabels por varios nombres posibles, buscando en descendencia
+local function findLabel(candidates)
+	for _, name in ipairs(candidates) do
+		local inst = rootGui:FindFirstChild(name, true)
+		if inst and inst:IsA("TextLabel") then
+			return inst
+		end
+	end
+	return nil
+end
 
-local function stat(ls: Instance, names: {string})
-	for _, n in ipairs(names) do
-		local v = ls:FindFirstChild(n)
-		if v and v:IsA("ValueBase") then return v end
+-- 2) Intenta localizar las tres labels (pon aquí tus nombres si ya los conoces)
+local fishLabel    = findLabel({ "FishValue", "FishText", "Fish", "TxtFish", "LblFish" })
+local levelLabel   = findLabel({ "LevelValue", "LevelText", "Level", "TxtLevel", "LblLevel", "LvValue", "Lv" })
+local ticketsLabel = findLabel({ "TicketsValue", "TicketsText", "Tickets", "TxtTickets", "LblTickets", "CoinsValue" })
+
+-- 3) Espera a leaderstats y a sus hijos estándar
+local leaderstats = LocalPlayer:WaitForChild("leaderstats")
+local fish    = leaderstats:WaitForChild("Fish")
+local tickets = leaderstats:WaitForChild("Tickets")
+local level   = leaderstats:WaitForChild("Level")
+
+-- 4) Funciones de pintado
+local function fmt(n)
+	-- formato corto: 1.2K, 3.4M si quieres; si no, simplemente tostring(n)
+	if n >= 1e6 then
+		return string.format("%.1fM", n/1e6)
+	elseif n >= 1e3 then
+		return string.format("%.1fK", n/1e3)
+	else
+		return tostring(n)
 	end
 end
 
-local function refresh()
-	local ls = player:FindFirstChild("leaderstats")
-	if not ls then return end
-	local lv      = stat(ls, {"lv"})       -- exacto (minúsculas)
-	local tickets = stat(ls, {"Tickets"})
-	local fish    = stat(ls, {"Fish","Peces"}) -- compat
-	label.Text = string.format("LV: %s    Tickets: %s    Fish: %s",
-		lv and lv.Value or "0",
-		tickets and tickets.Value or "0",
-		fish and fish.Value or "0"
-	)
+local function updateFish()
+	if fishLabel then fishLabel.Text = fmt(fish.Value) end
+end
+local function updateTickets()
+	if ticketsLabel then ticketsLabel.Text = fmt(tickets.Value) end
+end
+local function updateLevel()
+	if levelLabel then levelLabel.Text = tostring(level.Value) end
 end
 
-local function hook(ls: Instance)
-	for _, v in ipairs(ls:GetChildren()) do
-		if v:IsA("ValueBase") then v:GetPropertyChangedSignal("Value"):Connect(refresh) end
-	end
-	ls.ChildAdded:Connect(function(v)
-		if v:IsA("ValueBase") then v:GetPropertyChangedSignal("Value"):Connect(refresh); refresh() end
-	end)
-	ls.ChildRemoved:Connect(refresh)
-	refresh()
-end
+-- 5) Pintado inicial + suscripciones
+updateFish(); updateTickets(); updateLevel()
 
-player.ChildAdded:Connect(function(ch) if ch.Name=="leaderstats" then hook(ch) end end)
-if player:FindFirstChild("leaderstats") then hook(player.leaderstats) end
+fish:GetPropertyChangedSignal("Value"):Connect(updateFish)
+tickets:GetPropertyChangedSignal("Value"):Connect(updateTickets)
+level:GetPropertyChangedSignal("Value"):Connect(updateLevel)
