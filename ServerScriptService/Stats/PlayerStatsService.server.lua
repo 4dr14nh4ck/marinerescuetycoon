@@ -9,6 +9,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local DataStoreService = game:GetService("DataStoreService")
 local SSS = game:GetService("ServerScriptService")
 
+-- Silenciar logs informativos sin tocar la lógica
+local VERBOSE = false
+
 local ORDERED_STORE_NAME = "INTARC_GlobalFish_v1"
 local PROFILE_STORE_NAME = "INTARC_Profiles_v2"
 
@@ -27,21 +30,44 @@ local function getTicketService()
 		return nil
 	end
 	local ok, svc = pcall(require, mod)
-	if not ok then warn("[PlayerStatsService] require TicketService falló:", svc); return nil end
-	print("[PlayerStatsService] TicketService cargado desde:", mod:GetFullName())
+	if not ok then
+		warn("[PlayerStatsService] require TicketService falló:", svc)
+		return nil
+	end
+	if VERBOSE then
+		print("[PlayerStatsService] TicketService cargado desde:", mod:GetFullName())
+	end
 	return svc
 end
 local TicketService = getTicketService()
 
-local function dsKey(userId) return "u_" .. tostring(userId) end
-local function toInt(n) if typeof(n) ~= "number" then return 0 end return math.max(0, math.floor(n + 0.5)) end
-local function safeGet(ds, key) local ok, r = pcall(function() return ds:GetAsync(key) end); return ok and r or nil end
+local function dsKey(userId)
+	return "u_" .. tostring(userId)
+end
+
+local function toInt(n)
+	if typeof(n) ~= "number" then return 0 end
+	return math.max(0, math.floor(n + 0.5))
+end
+
+local function safeGet(ds, key)
+	local ok, r = pcall(function() return ds:GetAsync(key) end)
+	return ok and r or nil
+end
 
 local function ensureLeaderstats(p)
 	local ls = p:FindFirstChild("leaderstats")
-	if not ls then ls = Instance.new("Folder"); ls.Name = "leaderstats"; ls.Parent = p end
+	if not ls then
+		ls = Instance.new("Folder")
+		ls.Name = "leaderstats"
+		ls.Parent = p
+	end
 	for _, n in ipairs({ "Fish","Tickets","Level" }) do
-		if not ls:FindFirstChild(n) then Instance.new("IntValue", ls).Name = n end
+		if not ls:FindFirstChild(n) then
+			local v = Instance.new("IntValue")
+			v.Name = n
+			v.Parent = ls
+		end
 	end
 	return ls
 end
@@ -65,7 +91,7 @@ local function onPlayer(p)
 		local data = safeGet(profileStore, dsKey(p.UserId))
 		local lvl = 0
 		if type(data) == "table" then
-			lvl = tonumber(data.capacityLevel) or 0  -- <= clave confirmada por Creator Hub
+			lvl = tonumber(data.capacityLevel) or 0  -- clave confirmada
 		end
 		ls.Level.Value = toInt(lvl)
 	end
@@ -75,7 +101,9 @@ local function onPlayer(p)
 		if TicketService then
 			-- autoridad runtime
 			ls.Tickets.Value = toInt(TicketService.Get(p))
-			TicketService.Changed(p, function(v) ls.Tickets.Value = toInt(v) end)
+			TicketService.Changed(p, function(v)
+				ls.Tickets.Value = toInt(v)
+			end)
 		else
 			-- lectura directa de la DB si no hay módulo cargado
 			local data = safeGet(profileStore, dsKey(p.UserId))
@@ -90,8 +118,10 @@ local function onPlayer(p)
 		end
 	end
 
-	print(("[PlayerStatsService] %s -> Fish=%d | Tickets=%d | Level=%d")
-		:format(p.Name, ls.Fish.Value, ls.Tickets.Value, ls.Level.Value))
+	if VERBOSE then
+		print(("[PlayerStatsService] %s -> Fish=%d | Tickets=%d | Level=%d")
+			:format(p.Name, ls.Fish.Value, ls.Tickets.Value, ls.Level.Value))
+	end
 end
 
 Players.PlayerAdded:Connect(onPlayer)
