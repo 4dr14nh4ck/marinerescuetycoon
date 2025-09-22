@@ -7,7 +7,7 @@ local function requireTS()
 		local stats = SSS:FindFirstChild("Stats")
 		if stats then mod = stats:FindFirstChild("TicketService") end
 	end
-	if not mod then warn("[Aquarium.TicketService] TicketService module NO encontrado."); return nil end
+	if not mod then warn("[Aquarium.TicketService] TicketService NO encontrado."); return nil end
 	local ok, svc = pcall(require, mod)
 	if not ok then warn("[Aquarium.TicketService] require falló:", svc); return nil end
 	return svc
