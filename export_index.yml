@@ -1,0 +1,35 @@
+name: Export RAW index
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "**/*.lua"
+      - ".github/workflows/export-index.yml"
+      - "scripts/generate-index.js"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Generate index
+        run: |
+          mkdir -p _export
+          node scripts/generate-index.js
+
+      - name: Commit index
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(export): update RAW index"
+          file_pattern: "_export/index.json"
