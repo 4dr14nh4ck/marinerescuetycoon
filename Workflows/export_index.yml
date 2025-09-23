@@ -3,10 +3,11 @@ name: Export RAW index
 on:
   push:
     branches: [ "main" ]
-    paths:
-      - "**/*.lua"
-      - ".github/workflows/export-index.yml"
-      - "scripts/generate-index.js"
+paths:
+  - "**/*.lua"
+  - "**/*.luau"
+  - ".github/workflows/export-index.yml"
+  - "scripts/generate-index.js"
 
 permissions:
   contents: write
