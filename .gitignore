@@ -17,3 +17,5 @@ out/
 node_modules/
 __pycache__/
 rojo.exe
+!_export/
+!_export/index.json
