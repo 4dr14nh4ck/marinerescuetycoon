@@ -166,7 +166,7 @@ local function onPlayerAdded(player)
 		end
 
 		-- IMPORTANTE: si no se encuentran en el store, no pisamos valores
-		-- que puedan llegar de runtime (Attributes/Values). Solo asignamos si >0.
+		-- que puedan llegar de runtime (Attributes/Values). Solo asignamos si >0
 		if tickets and tickets > 0 then ls.Tickets.Value = toInt(tickets) end
 		if level   and level   > 0 then ls.Level.Value   = toInt(level)   end
 	end
