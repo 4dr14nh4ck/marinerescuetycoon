@@ -1,0 +1,201 @@
+{
+  "repo": "4dr14nh4ck/marinerescuetycoon",
+  "branch": "main",
+  "commit": "8363197f26db00d21176902a715298a8c7f63636",
+  "generatedAt": "2025-09-23T11:26:39.100Z",
+  "count": 32,
+  "files": [
+    {
+      "path": "ReplicatedStorage/Aquarium/Config.lua",
+      "size": 293,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ReplicatedStorage/Aquarium/Config.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ReplicatedStorage/Aquarium/Config.lua"
+    },
+    {
+      "path": "ReplicatedStorage/Aquarium/Profiles.lua",
+      "size": 704,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ReplicatedStorage/Aquarium/Profiles.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ReplicatedStorage/Aquarium/Profiles.lua"
+    },
+    {
+      "path": "ReplicatedStorage/Aquarium/Signals.lua",
+      "size": 624,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ReplicatedStorage/Aquarium/Signals.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ReplicatedStorage/Aquarium/Signals.lua"
+    },
+    {
+      "path": "ReplicatedStorage/Aquarium/Utils.lua",
+      "size": 743,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ReplicatedStorage/Aquarium/Utils.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ReplicatedStorage/Aquarium/Utils.lua"
+    },
+    {
+      "path": "ReplicatedStorage/Fish/FishConfig.lua",
+      "size": 1763,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ReplicatedStorage/Fish/FishConfig.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ReplicatedStorage/Fish/FishConfig.lua"
+    },
+    {
+      "path": "ReplicatedStorage/Fish/FishSignals.lua",
+      "size": 1104,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ReplicatedStorage/Fish/FishSignals.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ReplicatedStorage/Fish/FishSignals.lua"
+    },
+    {
+      "path": "ReplicatedStorage/Fish/NetClient.lua",
+      "size": 2152,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ReplicatedStorage/Fish/NetClient.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ReplicatedStorage/Fish/NetClient.lua"
+    },
+    {
+      "path": "ServerScriptService/Aquarium/AquariumInit.server.lua",
+      "size": 315,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ServerScriptService/Aquarium/AquariumInit.server.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ServerScriptService/Aquarium/AquariumInit.server.lua"
+    },
+    {
+      "path": "ServerScriptService/Aquarium/AutoUpgradeBinder.server.lua",
+      "size": 1217,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ServerScriptService/Aquarium/AutoUpgradeBinder.server.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ServerScriptService/Aquarium/AutoUpgradeBinder.server.lua"
+    },
+    {
+      "path": "ServerScriptService/Aquarium/FarmBuilder.server.lua",
+      "size": 1099,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ServerScriptService/Aquarium/FarmBuilder.server.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ServerScriptService/Aquarium/FarmBuilder.server.lua"
+    },
+    {
+      "path": "ServerScriptService/Aquarium/NameplateClean.server.lua",
+      "size": 980,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ServerScriptService/Aquarium/NameplateClean.server.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ServerScriptService/Aquarium/NameplateClean.server.lua"
+    },
+    {
+      "path": "ServerScriptService/Aquarium/OwnershipService.server.lua",
+      "size": 1852,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ServerScriptService/Aquarium/OwnershipService.server.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ServerScriptService/Aquarium/OwnershipService.server.lua"
+    },
+    {
+      "path": "ServerScriptService/Aquarium/Production.server.lua",
+      "size": 2469,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ServerScriptService/Aquarium/Production.server.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ServerScriptService/Aquarium/Production.server.lua"
+    },
+    {
+      "path": "ServerScriptService/Aquarium/TicketService.server.lua",
+      "size": 677,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ServerScriptService/Aquarium/TicketService.server.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ServerScriptService/Aquarium/TicketService.server.lua"
+    },
+    {
+      "path": "ServerScriptService/Aquarium/UpgradeService.server.lua",
+      "size": 1976,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ServerScriptService/Aquarium/UpgradeService.server.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ServerScriptService/Aquarium/UpgradeService.server.lua"
+    },
+    {
+      "path": "ServerScriptService/Aquarium/VisualService.server.lua",
+      "size": 2860,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ServerScriptService/Aquarium/VisualService.server.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ServerScriptService/Aquarium/VisualService.server.lua"
+    },
+    {
+      "path": "ServerScriptService/Fish/CatchService.server.lua",
+      "size": 4021,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ServerScriptService/Fish/CatchService.server.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ServerScriptService/Fish/CatchService.server.lua"
+    },
+    {
+      "path": "ServerScriptService/Fish/FishEventsBootstrap.server.lua",
+      "size": 917,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ServerScriptService/Fish/FishEventsBootstrap.server.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ServerScriptService/Fish/FishEventsBootstrap.server.lua"
+    },
+    {
+      "path": "ServerScriptService/Fish/FishSpawner.server.lua",
+      "size": 7134,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ServerScriptService/Fish/FishSpawner.server.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ServerScriptService/Fish/FishSpawner.server.lua"
+    },
+    {
+      "path": "ServerScriptService/Fish/NetBootstrap.server.lua",
+      "size": 2725,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ServerScriptService/Fish/NetBootstrap.server.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ServerScriptService/Fish/NetBootstrap.server.lua"
+    },
+    {
+      "path": "ServerScriptService/Fish/NetService.server.lua",
+      "size": 4662,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ServerScriptService/Fish/NetService.server.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ServerScriptService/Fish/NetService.server.lua"
+    },
+    {
+      "path": "ServerScriptService/Fish/TicketService.server.lua",
+      "size": 685,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ServerScriptService/Fish/TicketService.server.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ServerScriptService/Fish/TicketService.server.lua"
+    },
+    {
+      "path": "ServerScriptService/Leaderboards/GlobalLeaderboard.server.lua",
+      "size": 6104,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ServerScriptService/Leaderboards/GlobalLeaderboard.server.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ServerScriptService/Leaderboards/GlobalLeaderboard.server.lua"
+    },
+    {
+      "path": "ServerScriptService/Player/PlayerStatsService.server.lua",
+      "size": 5861,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ServerScriptService/Player/PlayerStatsService.server.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ServerScriptService/Player/PlayerStatsService.server.lua"
+    },
+    {
+      "path": "ServerScriptService/Stats/PlayerStatsService.server.lua",
+      "size": 3774,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ServerScriptService/Stats/PlayerStatsService.server.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ServerScriptService/Stats/PlayerStatsService.server.lua"
+    },
+    {
+      "path": "ServerScriptService/Stats/TicketsService.lua",
+      "size": 2554,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ServerScriptService/Stats/TicketsService.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ServerScriptService/Stats/TicketsService.lua"
+    },
+    {
+      "path": "ServerScriptService/TicketService.lua",
+      "size": 2574,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/ServerScriptService/TicketService.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/ServerScriptService/TicketService.lua"
+    },
+    {
+      "path": "StarterPlayer/StarterPlayerScripts/CatchUI.client.lua",
+      "size": 3676,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/StarterPlayer/StarterPlayerScripts/CatchUI.client.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/StarterPlayer/StarterPlayerScripts/CatchUI.client.lua"
+    },
+    {
+      "path": "StarterPlayer/StarterPlayerScripts/ControlsEnable.client.lua",
+      "size": 669,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/StarterPlayer/StarterPlayerScripts/ControlsEnable.client.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/StarterPlayer/StarterPlayerScripts/ControlsEnable.client.lua"
+    },
+    {
+      "path": "StarterPlayer/StarterPlayerScripts/HUD.client.lua",
+      "size": 2164,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/StarterPlayer/StarterPlayerScripts/HUD.client.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/StarterPlayer/StarterPlayerScripts/HUD.client.lua"
+    },
+    {
+      "path": "StarterPlayer/StarterPlayerScripts/NetTool.client.lua",
+      "size": 883,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/StarterPlayer/StarterPlayerScripts/NetTool.client.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/StarterPlayer/StarterPlayerScripts/NetTool.client.lua"
+    },
+    {
+      "path": "StarterPlayer/StarterPlayerScripts/Tutorial.client.lua",
+      "size": 4505,
+      "raw": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/main/StarterPlayer/StarterPlayerScripts/Tutorial.client.lua",
+      "atCommit": "https://raw.githubusercontent.com/4dr14nh4ck/marinerescuetycoon/8363197f26db00d21176902a715298a8c7f63636/StarterPlayer/StarterPlayerScripts/Tutorial.client.lua"
+    }
+  ]
+}
