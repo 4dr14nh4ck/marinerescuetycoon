@@ -1,42 +1,32 @@
---!strict
--- RemoteEvents centralizados para red/peces + UI
-
+-- ReplicatedStorage/Fish/FishSignals.lua
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local folder = ReplicatedStorage:FindFirstChild("FishSignals") or Instance.new("Folder")
+folder.Name = "FishSignals"
+folder.Parent = ReplicatedStorage
 
-local eventsFolder = ReplicatedStorage:FindFirstChild("FishEvents")
-if not eventsFolder then
-	local f = Instance.new("Folder")
-	f.Name = "FishEvents"
-	f.Parent = ReplicatedStorage
-	eventsFolder = f
+local function remote(name)
+	local r = folder:FindFirstChild(name)
+	if not r then r = Instance.new("RemoteEvent"); r.Name = name; r.Parent = folder end
+	return r
 end
 
-local function getOrCreateEvent(name: string): RemoteEvent
-	local ev = eventsFolder:FindFirstChild(name)
-	if not ev then
-		ev = Instance.new("RemoteEvent")
-		ev.Name = name
-		ev.Parent = eventsFolder
-	end
-	return ev :: RemoteEvent
-end
+local Signals = {}
+-- Client -> Server
+Signals.ThrowRequest  = remote("ThrowRequest")
+Signals.BeginCure     = remote("BeginCure")
+Signals.CancelCure    = remote("CancelCure")
+Signals.Release       = remote("Release")
+Signals.ReportHit     = remote("ReportHit")   -- opcional
 
--- Cliente -> Servidor
-local ThrowRequest   = getOrCreateEvent("ThrowRequest")
-local CatchDecision  = getOrCreateEvent("CatchDecision")    -- Cure/Release
+-- Server -> Client
+Signals.ThrowResult   = remote("ThrowResult")
+Signals.CatchFeedback = remote("CatchFeedback")
+Signals.CatchPrompt   = remote("CatchPrompt")
 
--- Servidor -> Cliente
-local ThrowResult    = getOrCreateEvent("ThrowResult")      -- hit/miss, pos, cooldown
-local CatchPrompt    = getOrCreateEvent("CatchPrompt")      -- abre UI de decisión
-local CatchFeedback  = getOrCreateEvent("CatchFeedback")    -- strings (compat UI)
-local CureProgress   = getOrCreateEvent("CureProgress")     -- progreso de curación (uid, tLeft, tTotal)
+-- UI de curación (server -> client)
+Signals.ShowCatch     = remote("ShowCatch")   -- compat
+Signals.CureTick      = remote("CureTick")
+Signals.CureComplete  = remote("CureComplete")
+Signals.Error         = remote("FishError")
 
-return {
-	Folder        = eventsFolder,
-	ThrowRequest  = ThrowRequest,
-	ThrowResult   = ThrowResult,
-	CatchPrompt   = CatchPrompt,
-	CatchDecision = CatchDecision,
-	CatchFeedback = CatchFeedback,
-	CureProgress  = CureProgress,
-}
+return Signals
