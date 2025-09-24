@@ -1,7 +1,11 @@
---!strict
+-- ServerScriptService/Aquarium/AquariumInit.server.lua
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Config = require(ReplicatedStorage.Aquarium:WaitForChild("Config"))
-local Utils = require(ReplicatedStorage.Aquarium:WaitForChild("Utils"))
+local Utils = require(ReplicatedStorage:WaitForChild("Aquarium"):WaitForChild("Utils"))
 
-Utils.GetAquariumsFolder()
-print("[AquariumInit] OK. Folder:", Config.WorkspaceAquariumsFolder)
+local root = Utils.GetAquariumsFolder()
+if not root then
+	warn("[AquariumInit] No se encontró raíz de acuarios")
+	return
+end
+
+print("[AquariumInit] OK. Folder: " .. root.Name)

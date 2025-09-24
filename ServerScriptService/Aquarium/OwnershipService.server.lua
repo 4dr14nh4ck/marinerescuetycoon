@@ -1,60 +1,64 @@
 -- ServerScriptService/Aquarium/OwnershipService.server.lua
--- Auto-asigna un plot al entrar (marca OwnerUserId y etiqueta con el nombre), sin niveles.
+-- Asigna SIEMPRE un AquariumSlot al entrar (forzado si hace falta) y escribe el nombre en las etiquetas de dueño.
 local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Utils = require(ReplicatedStorage:WaitForChild("Aquarium"):WaitForChild("Utils"))
 
-local function root()
-	return Workspace:FindFirstChild("Aquariums") or Workspace:FindFirstChild("Acuarios")
-end
+local function claimPlotFor(player: Player)
+	local root = Utils.GetAquariumsFolder()
+	if not root then
+		warn("[Ownership] Sin raíz AquariumFarm")
+		return
+	end
 
-local function findFreePlot()
-	local r = root() if not r then return nil end
-	for _, plot in ipairs(r:GetChildren()) do
-		if (plot:IsA("Model") or plot:IsA("Folder")) and not plot:GetAttribute("OwnerUserId") then
-			return plot
+	-- 1) Si ya tiene uno, úsalo
+	local plot = Utils.GetPlotForUserId(player.UserId, root)
+
+	-- 2) Si no, prueba libre
+	if not plot then
+		plot = Utils.GetFreePlot(root)
+	end
+
+	-- 3) Si aún no, fuerza el PRIMER slot disponible
+	if not plot then
+		local all = Utils.GetAllSlots(root)
+		if #all > 0 then
+			plot = all[1]
 		end
 	end
-	return nil
-end
 
-local function labelOf(plot)
-	for _, inst in ipairs(plot:GetDescendants()) do
-		if inst:IsA("TextLabel") then return inst end
+	if not plot then
+		warn("[Ownership] No se pudo asignar AquariumSlot (no hay)")
+		return
 	end
-	return nil
-end
 
-local function setOwner(plot, p: Player)
-	plot:SetAttribute("OwnerUserId", p.UserId)
-	-- etiqueta visual
-	local tl = labelOf(plot)
-	if not tl then
-		local anchor = plot:FindFirstChildWhichIsA("BasePart") or plot.PrimaryPart
+	-- Marca dueño (sobrescribe si tuviera otro ID)
+	plot:SetAttribute("OwnerUserId", player.UserId)
+
+	-- Escribe nombre en TODAS las etiquetas de dueño visibles (OwnerBillboard/NameLabel…)
+	local nameText = (player.DisplayName ~= "" and player.DisplayName) or player.Name
+	local labels = Utils.GetOwnerLabels(plot)
+	if #labels == 0 then
+		local anchor = Utils.FindAnchor(plot)
 		if anchor then
-			local bb = Instance.new("BillboardGui")
-			bb.Name = "NameBillboard"
-			bb.Size = UDim2.fromOffset(200, 60)
-			bb.ExtentsOffsetWorldSpace = Vector3.new(0, 6, 0)
-			bb.AlwaysOnTop = true
-			bb.Parent = anchor
-			tl = Instance.new("TextLabel")
-			tl.Name = "Text"
-			tl.Size = UDim2.fromScale(1,1)
-			tl.BackgroundTransparency = 1
-			tl.TextScaled = true
-			tl.Parent = bb
+			table.insert(labels, Utils.EnsureBillboard(anchor, "NameBillboard", 6))
 		end
 	end
-	if tl then tl.Text = p.DisplayName ~= "" and p.DisplayName or p.Name end
+	for _, tl in ipairs(labels) do
+		tl.Text = nameText
+	end
+	-- Mantén limpio (borra “ · Lv.X”, “- Lv.X”, etc. si otros scripts reescriben)
+	Utils.HookLabelSanitizer(plot)
+
+	print(("[Ownership] %s -> %s"):format(player.Name, plot:GetFullName()))
+
+	-- Refresca visual (contador y peces)
+	if _G.Visual and _G.Visual.RefreshForPlayer then
+		_G.Visual.RefreshForPlayer(player)
+	end
 end
 
-local function onPlayerAdded(p: Player)
-	local plot = findFreePlot()
-	if plot then setOwner(plot, p) end
-	-- Refrescar contadores si VisualService está cargado
-	if _G.Visual and _G.Visual.RefreshForPlayer then _G.Visual.RefreshForPlayer(p) end
-end
-
-Players.PlayerAdded:Connect(onPlayerAdded)
+Players.PlayerAdded:Connect(claimPlotFor)
+for _, plr in ipairs(Players:GetPlayers()) do claimPlotFor(plr) end
 
 print("[OwnershipService] Ready")
